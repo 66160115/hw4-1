@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ระบบบันทึกค่าใช้จ่าย</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    :root {
+      --primary-color: #94c720;
+      --secondary-color: #ffdd57;
+      --bg-color: #f7f8fa;
+      --text-color: #333;
+    }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-color);
+    }
+
+    .primary-btn {
+      background-color: var(--primary-color);
+      color: white;
+    }
+
+    .secondary-btn {
+      background-color: var(--secondary-color);
+      color: black;
+    }
+
+    .card {
+      background-color: white;
+      border: 1px solid #e5e7eb;
+      border-radius: 12px;
+      padding: 16px;
+      box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+    }
+  </style>
+</head>
+<body class="p-4">
+  <div class="max-w-3xl mx-auto">
+    <h1 class="text-4xl font-bold text-center mb-6">ระบบบันทึกค่าใช้จ่าย</h1>
+
+    <!-- ส่วนแบบฟอร์ม -->
+    <form id="expense-form" class="card mb-6">
+      <h2 class="text-xl font-semibold mb-4">เพิ่มรายการค่าใช้จ่าย</h2>
+      <div class="mb-4">
+        <label for="title" class="block text-sm font-medium">ชื่อรายการ</label>
+        <input type="text" id="title" required class="mt-1 p-2 w-full border rounded">
+      </div>
+      <div class="mb-4">
+        <label for="amount" class="block text-sm font-medium">จำนวนเงิน</label>
+        <input type="number" id="amount" required class="mt-1 p-2 w-full border rounded">
+      </div>
+      <div class="mb-4">
+        <label for="category" class="block text-sm font-medium">ประเภท</label>
+        <select id="category" required class="mt-1 p-2 w-full border rounded">
+          <option value="food">อาหาร</option>
+          <option value="transport">การเดินทาง</option>
+          <option value="entertainment">บันเทิง</option>
+          <option value="other">อื่น ๆ</option>
+        </select>
+      </div>
+      <div class="mb-4">
+        <label for="date" class="block text-sm font-medium">วันที่</label>
+        <input type="date" id="date" required class="mt-1 p-2 w-full border rounded">
+      </div>
+      <button type="submit" class="primary-btn px-4 py-2 rounded">เพิ่มรายการ</button>
+    </form>
+
+    <!-- ส่วนแสดงรายการค่าใช้จ่าย -->
+    <div class="card mb-4">
+      <h2 class="text-xl font-semibold mb-4">รายการค่าใช้จ่าย</h2>
+      <table class="w-full text-left">
+        <thead>
+          <tr>
+            <th class="border-b p-2">ชื่อรายการ</th>
+            <th class="border-b p-2">จำนวนเงิน</th>
+            <th class="border-b p-2">ประเภท</th>
+            <th class="border-b p-2">วันที่</th>
+            <th class="border-b p-2">การจัดการ</th>
+          </tr>
+        </thead>
+        <tbody id="expense-list"></tbody>
+      </table>
+    </div>
+
+    <!-- ส่วนสรุปและกรองข้อมูล -->
+    <div class="card">
+      <h2 class="text-xl font-semibold mb-4">สรุปค่าใช้จ่าย</h2>
+      <div class="mb-4">
+        <label for="filter-category" class="block text-sm font-medium">กรองตามประเภท</label>
+        <select id="filter-category" class="mt-1 p-2 w-full border rounded">
+          <option value="all">ทั้งหมด</option>
+          <option value="food">อาหาร</option>
+          <option value="transport">การเดินทาง</option>
+          <option value="entertainment">บันเทิง</option>
+          <option value="other">อื่น ๆ</option>
+        </select>
+      </div>
+      <div class="mb-4">
+        <label for="filter-date" class="block text-sm font-medium">กรองตามวันที่</label>
+        <input type="month" id="filter-date" class="mt-1 p-2 w-full border rounded">
+      </div>
+      <button id="filter-button" class="secondary-btn px-4 py-2 rounded">กรองข้อมูล</button>
+
+      <h3 class="text-lg font-semibold mt-6">ค่าใช้จ่ายรวม: <span id="total-expense">0</span> บาท</h3>
+    </div>
+  </div>
+
+  <script>
+    // โหลดรายการจาก localStorage
+    const loadExpenses = () => JSON.parse(localStorage.getItem('expenses')) || [];
+
+    // บันทึกรายการลง localStorage
+    const saveExpenses = (expenses) => localStorage.setItem('expenses', JSON.stringify(expenses));
+
+    // แสดงรายการค่าใช้จ่ายในตาราง
+    const renderExpenses = (expenses = loadExpenses()) => {
+      const expenseList = document.getElementById('expense-list');
+      expenseList.innerHTML = '';
+
+      expenses.forEach((expense, index) => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td class="border-b p-2">${expense.title}</td>
+          <td class="border-b p-2">${expense.amount}</td>
+          <td class="border-b p-2">${expense.category}</td>
+          <td class="border-b p-2">${expense.date}</td>
+          <td class="border-b p-2">
+            <button class="text-sky-500" onclick="editExpense(${index})">แก้ไข</button>
+            <button class="text-pink-500 ml-2" onclick="deleteExpense(${index})">ลบ</button>
+          </td>
+        `;
+        expenseList.appendChild(row);
+      });
+
+      calculateTotalExpense(expenses);
+    };
+
+    // คำนวณค่าใช้จ่ายรวม
+    const calculateTotalExpense = (expenses) => {
+      const total = expenses.reduce((sum, expense) => sum + expense.amount, 0);
+      document.getElementById('total-expense').textContent = total;
+    };
+
+    // จัดการการส่งฟอร์ม
+    document.getElementById('expense-form').addEventListener('submit', (event) => {
+      event.preventDefault();
+      const title = document.getElementById('title').value;
+      const amount = parseFloat(document.getElementById('amount').value);
+      const category = document.getElementById('category').value;
+      const date = document.getElementById('date').value;
+
+      const expense = { id: Date.now(), title, amount, category, date };
+
+      const expenses = loadExpenses();
+      expenses.push(expense);
+      saveExpenses(expenses);
+      renderExpenses();
+
+      // ล้างข้อมูลในฟอร์ม
+      event.target.reset();
+    });
+
+    // ลบรายการค่าใช้จ่าย
+    const deleteExpense = (index) => {
+      const expenses = loadExpenses();
+      expenses.splice(index, 1);
+      saveExpenses(expenses);
+      renderExpenses();
+    };
+
+    // แก้ไขรายการค่าใช้จ่าย
+    const editExpense = (index) => {
+      const expenses = loadExpenses();
+      const expense = expenses[index];
+
+      document.getElementById('title').value = expense.title;
+      document.getElementById('amount').value = expense.amount;
+      document.getElementById('category').value = expense.category;
+      document.getElementById('date').value = expense.date;
+
+      // ลบรายการเดิมก่อนบันทึกใหม่
+      deleteExpense(index);
+    };
+
+    // จัดการการกรองข้อมูล
+    document.getElementById('filter-button').addEventListener('click', () => {
+      const categoryFilter = document.getElementById('filter-category').value;
+      const dateFilter = document.getElementById('filter-date').value;
+      let filteredExpenses = loadExpenses();
+
+      if (categoryFilter !== 'all') {
+        filteredExpenses = filteredExpenses.filter(expense => expense.category === categoryFilter);
+      }
+
+      if (dateFilter) {
+        filteredExpenses = filteredExpenses.filter(expense => expense.date.startsWith(dateFilter));
+      }
+
+      renderExpenses(filteredExpenses);
+    });
+
+    // เรียกฟังก์ชันแสดงข้อมูลครั้งแรก
+    renderExpenses();
+  </script>
+</body>
+</html>
