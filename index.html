@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="th">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ระบบบันทึกค่าใช้จ่าย</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="container">
+      <header>
+        <h2>ระบบบันทึกค่าใช้จ่าย</h2>
+        <p>
+          บันทึกค่าใช้จ่ายของคุณในแต่ละวันเพื่อจัดการการเงินอย่างมีประสิทธิภาพ
+        </p>
+      </header>
+
+      <section>
+        <h3>ฟอร์มบันทึกค่าใช้จ่าย</h3>
+        <form id="expense-form">
+          <label for="title">รายการ:</label>
+          <input
+            type="text"
+            id="title"
+            name="title"
+            placeholder="เช่น ค่าอาหาร"
+            required
+          />
+
+          <label for="amount">จำนวนเงิน (บาท):</label>
+          <input
+            type="number"
+            id="amount"
+            name="amount"
+            placeholder="จำนวนเงิน"
+            required
+          />
+
+          <label for="category">ประเภท:</label>
+          <select id="category" name="category">
+            <option value="food">อาหาร</option>
+            <option value="transport">ขนส่ง</option>
+            <option value="entertainment">บันเทิง</option>
+            <option value="health">สุขภาพ</option>
+            <option value="other">อื่นๆ</option>
+          </select>
+
+          <label for="date">วันที่:</label>
+          <input type="date" id="date" name="date" required />
+
+          <button type="submit">บันทึก</button>
+        </form>
+      </section>
+
+      <section id="expense-summary-section">
+        <h3>สรุปค่าใช้จ่าย</h3>
+        <div id="expense-summary"></div>
+      </section>
+
+      <section>
+        <h3>กรองข้อมูลตามวันที่</h3>
+        <input type="date" id="filter-date" onchange="filterByDate()" />
+        <button onclick="generateMonthlyReport()">ดูรายงานรายเดือน</button>
+      </section>
+    </div>
+
+    <script src="script.js"></script>
+  </body>
+</html>
